@@ -44,6 +44,7 @@ func main() {
 	}
 
 	logger.Printf("starting %s server on %s", cfg.env, srv.Addr)
-	err := srv.ListenAndServe()
-	log.Fatal(err)
+	if err := srv.ListenAndServe(); err != nil {
+		log.Fatal(err)
+	}
 }
