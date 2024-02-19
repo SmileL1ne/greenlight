@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -9,7 +10,19 @@ import (
 )
 
 func (app *application) createMovieHandler(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintln(w, "create a new movie")
+	var input struct {
+		Title   string   `json:"title"`
+		Year    int32    `json:"year"`
+		Runtime int32    `json:"runtime"`
+		Genres  []string `json:"genres"`
+	}
+
+	if err := json.NewDecoder(req.Body).Decode(&input); err != nil {
+		app.errorResponse(w, req, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	fmt.Fprintf(w, "%+v\n", input)
 }
 
 func (app *application) showMovieHandler(w http.ResponseWriter, req *http.Request) {
