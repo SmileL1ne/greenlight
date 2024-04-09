@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -17,7 +16,8 @@ func (app *application) createMovieHandler(w http.ResponseWriter, req *http.Requ
 		Genres  []string `json:"genres"`
 	}
 
-	if err := json.NewDecoder(req.Body).Decode(&input); err != nil {
+	err := app.readJSON(w, req, &input)
+	if err != nil {
 		app.errorResponse(w, req, http.StatusBadRequest, err.Error())
 		return
 	}
