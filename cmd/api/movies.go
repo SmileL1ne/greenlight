@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"greenlight.mustik.net/internal/data"
+	"greenlight.mustik.net/internal/validator"
 )
 
 func (app *application) createMovieHandler(w http.ResponseWriter, req *http.Request) {
@@ -19,6 +20,20 @@ func (app *application) createMovieHandler(w http.ResponseWriter, req *http.Requ
 	err := app.readJSON(w, req, &input)
 	if err != nil {
 		app.badRequestResponse(w, req, err)
+		return
+	}
+
+	movie := &data.Movie{
+		Title:   input.Title,
+		Year:    input.Year,
+		Runtime: input.Runtime,
+		Genres:  input.Genres,
+	}
+
+	v := validator.New()
+
+	if data.ValidateMovie(v, movie); !v.Valid() {
+		app.failedValidationResponse(w, req, v.Errors)
 		return
 	}
 
