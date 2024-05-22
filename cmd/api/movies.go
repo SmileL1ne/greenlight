@@ -185,10 +185,20 @@ func (app *application) listMoviesHandler(w http.ResponseWriter, req *http.Reque
 	input.Filters.Page = app.readInt(qs, "page", 1, v)
 	input.Filters.PageSize = app.readInt(qs, "page_size", 20, v)
 	input.Filters.Sort = app.readString(qs, "sort", "id")
+	input.Filters.SortSafelist = []string{"id", "title", "year", "runtime", "-id", "-title", "-year", "-runtime"}
 
-	if !v.Valid() {
+	if data.ValidateFilters(v, input.Filters); !v.Valid() {
 		app.failedValidationResponse(w, req, v.Errors)
 	}
 
-	fmt.Fprintf(w, "%+v\n", input)
+	movies, err := app.models.Movies.GetAll(input.Title, input.Genres, input.Filters)
+	if err != nil {
+		app.serverErrorResponse(w, req, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"movies": movies}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, req, err)
+	}
 }
