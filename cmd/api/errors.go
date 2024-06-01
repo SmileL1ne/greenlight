@@ -6,7 +6,10 @@ import (
 )
 
 func (app *application) logError(req *http.Request, err error) {
-	app.logger.Print(err)
+	app.logger.PrintError(err, map[string]string{
+		"request_method": req.Method,
+		"request_url":    req.URL.String(),
+	})
 }
 
 func (app *application) errorResponse(w http.ResponseWriter, req *http.Request, status int, message any) {
@@ -46,4 +49,9 @@ func (app *application) failedValidationResponse(w http.ResponseWriter, req *htt
 func (app *application) editConflictResponse(w http.ResponseWriter, req *http.Request) {
 	message := "unable to update the record due to an edit conflict, please try again"
 	app.errorResponse(w, req, http.StatusConflict, message)
+}
+
+func (app *application) rateLimitExceededResponse(w http.ResponseWriter, req *http.Request) {
+	message := "rate limit exceeded"
+	app.errorResponse(w, req, http.StatusTooManyRequests, message)
 }
