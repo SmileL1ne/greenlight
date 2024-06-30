@@ -20,7 +20,7 @@ func (app *application) serve() error {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	shutdown := make(chan error)
+	shutdownError := make(chan error)
 
 	go func() {
 		quit := make(chan os.Signal, 1)
@@ -29,14 +29,24 @@ func (app *application) serve() error {
 
 		s := <-quit
 
-		app.logger.PrintInfo("shutting down server", map[string]string{
+		app.logger.PrintInfo("cauth signal", map[string]string{
 			"signal": s.String(),
 		})
 
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
 
-		shutdown <- srv.Shutdown(ctx)
+		err := srv.Shutdown(ctx)
+		if err != nil {
+			shutdownError <- err
+		}
+
+		app.logger.PrintInfo("completing background tasks", map[string]string{
+			"addr": srv.Addr,
+		})
+
+		app.wg.Wait()
+		shutdownError <- nil
 	}()
 
 	app.logger.PrintInfo("starting server", map[string]string{
@@ -49,7 +59,7 @@ func (app *application) serve() error {
 		return err
 	}
 
-	err = <-shutdown
+	err = <-shutdownError
 	if err != nil {
 		return err
 	}
