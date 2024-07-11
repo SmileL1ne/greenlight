@@ -29,7 +29,7 @@ func (app *application) serve() error {
 
 		s := <-quit
 
-		app.logger.PrintInfo("cauth signal", map[string]string{
+		app.logger.PrintInfo("caught signal", map[string]string{
 			"signal": s.String(),
 		})
 
