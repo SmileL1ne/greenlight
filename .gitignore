@@ -3,3 +3,4 @@ main.go
 !/cmd/examples/cors/simple/main.go
 !/cmd/examples/cors/preflight/main.go
 .envrc
+/bin/**/*
